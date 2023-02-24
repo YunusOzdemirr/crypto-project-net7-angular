@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Crypto-Api.Application\Crypto-Api.Application.csproj" />
+    <ProjectReference Include="..\Crypto-Api.Domain\Crypto-Api.Domain.csproj" />
     <ProjectReference Include="..\Crypto_Api.Application\Crypto_Api.Application.csproj" />
     <ProjectReference Include="..\Crypto_Api.Domain\Crypto_Api.Domain.csproj" />
   </ItemGroup>
