@@ -1,21 +1,23 @@
 <p>home works!</p>
 <app-content-list></app-content-list>
 
-
 <div [ngClass]="'class1 class2'">NgClass Example 1</div>
-<div [ngClass]="['class1','class2']">NgClass Example 2</div>
-<div [ngClass]="{'class1':true}">NgClass Example 3</div>
-<div [ngClass]="{'class1':3<2, 'class2': 'asd'==='asd'}">NgClass Example 4</div>
-<div [ngClass]="{'class1 class2 class3': 'asd'==='asd'}">NgClass Example 5</div>
+<div [ngClass]="['class1', 'class2']">NgClass Example 2</div>
+<div [ngClass]="{ class1: true }">NgClass Example 3</div>
+<div [ngClass]="{ class1: 3 < 2, class2: 'asd' === 'asd' }">
+  NgClass Example 4
+</div>
+<div [ngClass]="{ 'class1 class2 class3': 'asd' === 'asd' }">
+  NgClass Example 5
+</div>
 
-<div [ngStyle]="{'font-weight':800}">NgStyle Example 1</div>
-<div [ngStyle]="{'height.px':100}">NgStyle Example 1</div>
-
+<div [ngStyle]="{ 'font-weight': 800 }">NgStyle Example 1</div>
+<div [ngStyle]="{ 'height.px': 100 }">NgStyle Example 1</div>
 
 <ul>
   <li *ngFor="let user of users">
-  İsim:  {{user.name }}
-  <br/>
-  Yaş:  {{user.age }}
+    İsim: {{ user.name }}
+    <br />
+    Yaş: {{ user.age }}
   </li>
 </ul>
