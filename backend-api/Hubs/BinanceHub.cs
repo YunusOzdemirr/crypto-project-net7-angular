@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Binance.Net.Clients;
 using Binance.Net.Interfaces;
@@ -60,6 +61,21 @@ public class BinanceHub : Hub
             await Task.Delay(delay, cancellationToken);
         }
     }
+
+    
+    public async IAsyncEnumerable<object> DataStream(TradeDataContainer container,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+            cancellationToken.ThrowIfCancellationRequested();
+        TickerDictionaryHistory.TryGetValue(container.Symbol, out var chart);
+        chart ??= new List<KlineDataContainer>
+            { new KlineDataContainer { LastPrice = container.LastPrice, TimeStamp = DateTime.Now } };
+        yield return new { Token = container, Chart = chart };
+
+        await Task.Delay(delay, cancellationToken);
+    }
+
 
     public BinanceHub(IBinanceService binanceService)
     {
