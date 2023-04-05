@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Binance.Net.Clients;
 using Binance.Net.Interfaces;
 using Binance.Net.Objects;
@@ -21,6 +22,44 @@ public class BinanceHub : Hub
     static int delay = 750;
     public static int sayac = 0;
 
+
+    public async IAsyncEnumerable<object> GetDetailAsync(string symbol,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        if (TickerDictionary.TryGetValue(symbol, out TradeDataContainer _))
+            while (true)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    cancellationToken.ThrowIfCancellationRequested();
+                TickerDictionary.TryGetValue(symbol, out TradeDataContainer data);
+
+                TickerDictionaryHistory.TryGetValue(symbol, out var chart);
+                if (chart is null)
+                    chart = new List<KlineDataContainer>
+                        { new KlineDataContainer { LastPrice = data.LastPrice, TimeStamp = DateTime.Now } };
+                yield return new { Token = data, Chart = chart };
+                await Task.Delay(delay);
+            }
+    }
+
+    public async IAsyncEnumerable<object> DataStream([EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                cancellationToken.ThrowIfCancellationRequested();
+            foreach (var coin in TickerDictionary)
+            {
+                TickerDictionaryHistory.TryGetValue(coin.Key, out var chart);
+                if (chart is null)
+                    chart = new List<KlineDataContainer>
+                        { new KlineDataContainer { LastPrice = coin.Value.LastPrice, TimeStamp = DateTime.Now } };
+                yield return new { Token = coin.Value, Chart = chart };
+            }
+
+            await Task.Delay(delay, cancellationToken);
+        }
+    }
 
     public BinanceHub(IBinanceService binanceService)
     {
