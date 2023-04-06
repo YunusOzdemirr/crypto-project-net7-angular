@@ -26,7 +26,7 @@ export class SignalrService {
       .catch(err => console.log('Error while starting connection: ' + err))
   }
   public dataStream = () => {
-    this.hubConnection.stream("StreamStocks2").subscribe({
+    this.hubConnection.stream("StreamStocks").subscribe({
       closed: false,
       next(value: any) {
         console.log("dataStream başladı");

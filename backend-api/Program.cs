@@ -11,9 +11,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IBinanceService, BinanceService>();
-
 builder.Services.AddSignalR(options => { options.EnableDetailedErrors = true; });
+builder.Services.AddSingleton<IBinanceService, BinanceService>();
+builder.Services.AddSingleton<IBinanceSocketService, BinanceSocketService>();
+
 builder.Services.AddSingleton<BinanceHub>();
 var app = builder.Build();
 
