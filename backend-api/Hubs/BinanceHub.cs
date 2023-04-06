@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 using Binance.Net.Clients;
 using Binance.Net.Interfaces;
 using Binance.Net.Objects;
@@ -11,6 +13,8 @@ using crypto_api.Models;
 using CryptoExchange.Net.CommonObjects;
 using CryptoExchange.Net.Sockets;
 using Microsoft.AspNetCore.SignalR;
+using crypto_api.Extensions;
+
 
 namespace crypto_api.Hubs;
 
@@ -23,7 +27,37 @@ public class BinanceHub : Hub
     public static ConcurrentDictionary<string, decimal> OldDataDictionary;
     static int delay = 750;
     public static int sayac = 0;
+    private readonly Subject<TradeDataContainer> _subject = new();
 
+
+    public BinanceHub(IBinanceService binanceService)
+    {
+        OldDataDictionary = new ConcurrentDictionary<string, decimal>();
+        TickerDictionaryHistory = new ConcurrentDictionary<string, List<KlineDataContainer>>();
+        TickerDictionary = new ConcurrentDictionary<string, TradeDataContainer>();
+        _binanceService = binanceService;
+        _symbols = _binanceService.GetProductsAsync().Result as List<BinanceProduct>;
+        Thread backgroundThread = new Thread(new ThreadStart(Start));
+        backgroundThread.Start();
+    }
+
+    private async void Start()
+    {
+        //  _ = await _socketClient.SpotStreams.SubscribeToAllTickerUpdatesAsync(ProcessTradeUpdate);
+        //  _ = await _socketClient.UsdFuturesStreams.SubscribeToAllBookTickerUpdatesAsync(ProcessTradeUsd);
+        _ = _binanceService.GetSocketClient().UsdFuturesStreams
+            .SubscribeToAllTickerUpdatesAsync(ProcessTradeUsdUpdate).Result;
+    }
+
+    public IObservable<TradeDataContainer> StreamStocks()
+    {
+        return _subject;
+    }
+
+    public ChannelReader<TradeDataContainer> StreamStocks2()
+    {
+        return StreamStocks().AsChannelReader(10);
+    }
 
     public async IAsyncEnumerable<object> GetDetailAsync(string symbol,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -44,7 +78,7 @@ public class BinanceHub : Hub
             }
     }
 
-    public async IAsyncEnumerable<object> DataStream2([EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<object> DataStream([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -61,39 +95,6 @@ public class BinanceHub : Hub
 
             await Task.Delay(delay, cancellationToken);
         }
-    }
-
-    
-    public async IAsyncEnumerable<object> DataStream(TradeDataContainer container,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        if (cancellationToken.IsCancellationRequested)
-            cancellationToken.ThrowIfCancellationRequested();
-        TickerDictionaryHistory.TryGetValue(container.Symbol, out var chart);
-        chart ??= new List<KlineDataContainer>
-            { new KlineDataContainer { LastPrice = container.LastPrice, TimeStamp = DateTime.Now } };
-        yield return new { Token = container, Chart = chart };
-
-        await Task.Delay(delay, cancellationToken);
-    }
-
-    public BinanceHub(IBinanceService binanceService)
-    {
-        OldDataDictionary = new ConcurrentDictionary<string, decimal>();
-        TickerDictionaryHistory = new ConcurrentDictionary<string, List<KlineDataContainer>>();
-        TickerDictionary = new ConcurrentDictionary<string, TradeDataContainer>();
-        _binanceService = binanceService;
-        _symbols = _binanceService.GetProductsAsync().Result as List<BinanceProduct>;
-        Thread backgroundThread = new Thread(new ThreadStart(Start));
-        backgroundThread.Start();
-    }
-
-    private async void Start()
-    {
-        //  _ = await _socketClient.SpotStreams.SubscribeToAllTickerUpdatesAsync(ProcessTradeUpdate);
-        //  _ = await _socketClient.UsdFuturesStreams.SubscribeToAllBookTickerUpdatesAsync(ProcessTradeUsd);
-        _ = _binanceService.GetSocketClient().UsdFuturesStreams
-            .SubscribeToAllTickerUpdatesAsync(ProcessTradeUsdUpdate).Result;
     }
 
 
@@ -149,8 +150,8 @@ public class BinanceHub : Hub
                             StopCount = oldData.StopLevel <= coin.LastPrice ? +1 : oldData.StopCount,
                             TradeOrderBids = oldData.TradeOrderBids,
                             TradeOrderAsks = oldData.TradeOrderAsks
-                        }; 
-                        DataStream(TickerDictionary[coin.Symbol],CancellationToken.None);
+                        };
+                        _subject.OnNext(TickerDictionary[coin.Symbol]);
                     }
                     else
                     {
@@ -183,13 +184,11 @@ public class BinanceHub : Hub
                             TargetCount = 0,
                             StopCount = 0
                         });
-                        DataStream(TickerDictionary[coin.Symbol],CancellationToken.None);
+                        _subject.OnNext(TickerDictionary[coin.Symbol]);
                     }
 
                     if (sayac == 300)
-                    {
                         OldDataDictionary.TryAdd(coin.Symbol, coin.LastPrice);
-                    }
 
                     sayac++;
 
