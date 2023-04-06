@@ -8,6 +8,7 @@ using Binance.Net.Objects.Models.Spot;
 using crypto_api.Configurations;
 using crypto_api.Interfaces;
 using crypto_api.Models;
+using CryptoExchange.Net.CommonObjects;
 using CryptoExchange.Net.Sockets;
 using Microsoft.AspNetCore.SignalR;
 
@@ -43,7 +44,7 @@ public class BinanceHub : Hub
             }
     }
 
-    public async IAsyncEnumerable<object> DataStream([EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<object> DataStream2([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         while (true)
         {
@@ -76,7 +77,6 @@ public class BinanceHub : Hub
         await Task.Delay(delay, cancellationToken);
     }
 
-
     public BinanceHub(IBinanceService binanceService)
     {
         OldDataDictionary = new ConcurrentDictionary<string, decimal>();
@@ -97,7 +97,7 @@ public class BinanceHub : Hub
     }
 
 
-    private static async void ProcessTradeUsdUpdate(DataEvent<IEnumerable<IBinance24HPrice>> dataEvent)
+    private async void ProcessTradeUsdUpdate(DataEvent<IEnumerable<IBinance24HPrice>> dataEvent)
     {
         await Func();
 
@@ -149,7 +149,8 @@ public class BinanceHub : Hub
                             StopCount = oldData.StopLevel <= coin.LastPrice ? +1 : oldData.StopCount,
                             TradeOrderBids = oldData.TradeOrderBids,
                             TradeOrderAsks = oldData.TradeOrderAsks
-                        };
+                        }; 
+                        DataStream(TickerDictionary[coin.Symbol],CancellationToken.None);
                     }
                     else
                     {
@@ -182,6 +183,7 @@ public class BinanceHub : Hub
                             TargetCount = 0,
                             StopCount = 0
                         });
+                        DataStream(TickerDictionary[coin.Symbol],CancellationToken.None);
                     }
 
                     if (sayac == 300)

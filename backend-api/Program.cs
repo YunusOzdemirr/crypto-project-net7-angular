@@ -13,10 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IBinanceService, BinanceService>();
 
-builder.Services.AddSignalR(options =>
-{
-    options.EnableDetailedErrors = true;
-});
+builder.Services.AddSignalR(options => { options.EnableDetailedErrors = true; });
 builder.Services.AddSingleton<BinanceHub>();
 var app = builder.Build();
 
@@ -52,5 +49,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseEndpoints(endpoints => { endpoints.MapHub<BinanceHub>("/binanceHub"); });
+app.UseEndpoints(endpoints => { endpoints.MapHub<BinanceHub>("/binance"); });
 app.Run();
