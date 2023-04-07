@@ -22,6 +22,7 @@ namespace crypto_api.Hubs;
 public class BinanceHub : Hub
 {
     private IBinanceSocketService _binanceSocketService;
+
     public BinanceHub(IBinanceSocketService binanceSocketService)
     {
         _binanceSocketService = binanceSocketService;
@@ -31,4 +32,5 @@ public class BinanceHub : Hub
     {
         return (await _binanceSocketService.GetStocks()).AsChannelReader(10);
     }
+
 }
