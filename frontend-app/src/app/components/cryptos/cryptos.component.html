@@ -1,6 +1,32 @@
-<h1>Crypto List</h1>
-<ul>
-  <li *ngFor="let item of cryptoList">
-    {{ item.baseAsset }} - Last Price: ${{ item.lastPrice }}
-  </li>
-</ul>
+  <table mat-table [dataSource]="cryptoList" class="mat-elevation-z8">
+
+    <!--- Note that these columns can be defined in any order.
+          The actual rendered columns are set as a property on the row definition" -->
+
+    <!-- Position Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef> Name</th>
+      <td mat-cell *matCellDef="let element"> {{element.baseAsset}} </td>
+    </ng-container>
+
+    <!-- Name Column -->
+    <ng-container matColumnDef="lastPrice">
+      <th mat-header-cell *matHeaderCellDef> Last Price</th>
+      <td mat-cell *matCellDef="let element"> {{element.lastPrice}} </td>
+    </ng-container>
+
+    <!-- Weight Column -->
+    <ng-container matColumnDef="lowPrice">
+      <th mat-header-cell *matHeaderCellDef> Low Price</th>
+      <td mat-cell *matCellDef="let element"> {{element.lowPrice}} </td>
+    </ng-container>
+
+    <!-- Symbol Column -->
+    <ng-container matColumnDef="openPrice">
+      <th mat-header-cell *matHeaderCellDef> Open Price</th>
+      <td mat-cell *matCellDef="let element"> {{element.openPrice}} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>

@@ -1,17 +1,30 @@
-import {Component} from '@angular/core';
+import {AfterViewInit, Component, ViewChild} from '@angular/core';
 import {SignalrService} from "../../services/signalr.service";
 import * as signalR from "@microsoft/signalr";
 import {Observer} from "rxjs";
 import {IStreamSubscriber} from "@microsoft/signalr";
 
 
+export interface Stock {
+  baseAsset: string;
+  lastPrice: number;
+  lowPrice: number;
+  highPrice: number;
+}
+
 @Component({
   selector: 'app-cryptos',
   templateUrl: './cryptos.component.html',
   styleUrls: ['./cryptos.component.scss']
 })
+
+
 export class CryptosComponent {
-  cryptoList: { baseAsset: string, lastPrice: number }[] = [];
+
+  displayedColumns: string[] = ['name', 'lastPrice', 'lowPrice', 'openPrice'];
+  cryptoList: Stock[] = [];
+  dataSource = this.cryptoList;
+
   public hubConnection: signalR.HubConnection = new signalR.HubConnectionBuilder()
     .withUrl("https:localhost:5001/binance")
     .configureLogging(signalR.LogLevel.Debug)
@@ -21,11 +34,12 @@ export class CryptosComponent {
   constructor(public signalRService: SignalrService) {
   }
 
+
   async ngOnInit() {
     await this.StartMethod();
 
     this.subject.subscribe(<IStreamSubscriber<any>>{
-      next: (value: { baseAsset: string, lastPrice: number }) => {
+      next: (value: Stock) => {
         // Her bir veri için çalışacak işlemler
         const existingItem = this.cryptoList.find(item => item.baseAsset === value.baseAsset);
         if (existingItem) {
@@ -36,6 +50,7 @@ export class CryptosComponent {
           // Yeni öğe, ekle
           console.log("Yeni veri:", value);
           this.cryptoList.push(value);
+          this.cryptoList = [...this.cryptoList];
         }
       },
       complete: () => {
@@ -93,5 +108,6 @@ export class CryptosComponent {
       );
     });
   }
+
 
 }

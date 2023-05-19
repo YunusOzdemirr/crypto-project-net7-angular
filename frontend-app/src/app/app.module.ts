@@ -8,6 +8,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { ApirequestComponent } from './components/apirequest/apirequest.component';
 import { HttpClient } from '@angular/common/http';
 import { CryptosComponent } from './components/cryptos/cryptos.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatTableModule} from '@angular/material/table';
 
 @NgModule({
   declarations: [
@@ -19,7 +21,10 @@ import { CryptosComponent } from './components/cryptos/cryptos.component';
     BrowserModule,
     AppRoutingModule,
     NgChartsModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule,
+    MatTableModule,
+
   ],
   providers: [],
   bootstrap: [AppComponent]
