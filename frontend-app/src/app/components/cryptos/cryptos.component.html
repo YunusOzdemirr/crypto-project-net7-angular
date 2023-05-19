@@ -6,25 +6,35 @@
     <!-- Position Column -->
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef> Name</th>
-      <td mat-cell *matCellDef="let element"> {{element.baseAsset}} </td>
+      <td mat-cell *matCellDef="let element"[id]="element.baseAsset+'name'"> {{element.baseAsset}} </td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="lastPrice">
       <th mat-header-cell *matHeaderCellDef> Last Price</th>
-      <td mat-cell *matCellDef="let element"> {{element.lastPrice}} </td>
+      <td  mat-cell *matCellDef="let element" [id]="element.baseAsset"> {{element.lastPrice}} </td>
+    </ng-container>
+
+  <ng-container matColumnDef="priceChange">
+      <th mat-header-cell *matHeaderCellDef> Price Change</th>
+      <td  mat-cell *matCellDef="let element" [id]="element.baseAsset+'priceChange'"> {{element.priceChange}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="priceChangePercent">
+      <th mat-header-cell *matHeaderCellDef> Price Change Percent</th>
+      <td  mat-cell *matCellDef="let element" [id]="element.baseAsset+'Percent'"> %{{element.priceChangePercent}} </td>
     </ng-container>
 
     <!-- Weight Column -->
     <ng-container matColumnDef="lowPrice">
       <th mat-header-cell *matHeaderCellDef> Low Price</th>
-      <td mat-cell *matCellDef="let element"> {{element.lowPrice}} </td>
+      <td mat-cell *matCellDef="let element" [id]="element.baseAsset+'lowPrice'"> {{element.lowPrice}} </td>
     </ng-container>
 
     <!-- Symbol Column -->
     <ng-container matColumnDef="openPrice">
       <th mat-header-cell *matHeaderCellDef> Open Price</th>
-      <td mat-cell *matCellDef="let element"> {{element.openPrice}} </td>
+      <td mat-cell *matCellDef="let element" [id]="element.baseAsset+'openPrice'" > {{element.openPrice}} </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

@@ -5,13 +5,6 @@ import {Observer} from "rxjs";
 import {IStreamSubscriber} from "@microsoft/signalr";
 
 
-export interface Stock {
-  baseAsset: string;
-  lastPrice: number;
-  lowPrice: number;
-  highPrice: number;
-}
-
 @Component({
   selector: 'app-cryptos',
   templateUrl: './cryptos.component.html',
@@ -21,7 +14,7 @@ export interface Stock {
 
 export class CryptosComponent {
 
-  displayedColumns: string[] = ['name', 'lastPrice', 'lowPrice', 'openPrice'];
+  displayedColumns: string[] = ['name', 'lastPrice', "priceChange", 'priceChangePercent', 'lowPrice', 'openPrice'];
   cryptoList: Stock[] = [];
   dataSource = this.cryptoList;
 
@@ -43,15 +36,19 @@ export class CryptosComponent {
         // Her bir veri için çalışacak işlemler
         const existingItem = this.cryptoList.find(item => item.baseAsset === value.baseAsset);
         if (existingItem) {
-          // Varolan öğe bulundu, fiyatını güncelle
           existingItem.lastPrice = value.lastPrice;
-          console.log("Güncellenen veri:", existingItem);
+          existingItem.priceChange = value.priceChange;
+          existingItem.priceChangePercent = value.priceChangePercent;
+          existingItem.openPrice = value.openPrice;
+          existingItem.lowPrice = value.lowPrice;
+          existingItem.highPrice = value.highPrice;
+          //console.log("Güncellenen veri:", value);
+          this.changeNode(value);
         } else {
-          // Yeni öğe, ekle
-          console.log("Yeni veri:", value);
+          //console.log("Yeni veri:", value);
           this.cryptoList.push(value);
-          this.cryptoList = [...this.cryptoList];
         }
+        this.cryptoList = [...this.cryptoList];
       },
       complete: () => {
         // Tamamlandığında çalışacak işlemler
@@ -64,6 +61,36 @@ export class CryptosComponent {
     });
 
 
+  }
+
+  public changeNode(value: Stock) {
+    const stockNode = document.getElementById(value.baseAsset);
+    if (stockNode) {
+      var prevChange = parseFloat(stockNode!.textContent!);
+      const priceChangeStockNode = document.getElementById(value.baseAsset + 'priceChange')!;
+      const percentChangeStockNode = document.getElementById(value.baseAsset + 'Percent')!;
+      const lowPriceStockNode = document.getElementById(value.baseAsset + 'lowPrice')!;
+      const openPriceStockNode = document.getElementById(value.baseAsset + 'openPrice')!;
+      const nameStockNode = document.getElementById(value.baseAsset + 'name')!;
+
+      if (prevChange > value.lastPrice) {
+        stockNode.className = "decrease";
+        priceChangeStockNode.className = "decrease";
+        percentChangeStockNode.className = "decrease";
+        lowPriceStockNode.className = "decrease";
+        openPriceStockNode.className = "decrease";
+        nameStockNode.className = "decrease";
+      } else if (prevChange < value.lastPrice) {
+        stockNode.className = "increase";
+        priceChangeStockNode.className = "increase";
+        percentChangeStockNode.className = "increase";
+        lowPriceStockNode.className = "increase";
+        openPriceStockNode.className = "increase";
+        nameStockNode.className = "increase";
+      } else {
+        return;
+      }
+    }
   }
 
   public async startConnection(): Promise<void> {
@@ -110,4 +137,38 @@ export class CryptosComponent {
   }
 
 
+}
+
+interface Stock {
+  id: number;
+  baseAsset: string;
+  baseAssetName: string;
+  quoteAsset: string;
+  quoteAssetName: string;
+  symbol: string;
+  lastPrice: number;
+  lastPrice2: number;
+  priceChange: number;
+  volume: number;
+  priceChangePercent: number;
+  secondTime: number;
+  highPrice: number;
+  openPrice: number;
+  lowPrice: number;
+  closePrice: number;
+  isClosed: boolean;
+  prevDayClosePrice: number;
+  quoteVolume: number;
+  weightedAveragePrice: number;
+  totalTrades: number;
+  circulatingSupply: number;
+  targetLevel: number;
+  stopLevel: number;
+  targetCount: number;
+  stopCount: number;
+  closeTime: string;
+  openTime: string;
+  date: string;
+  tradeOrderAsks: any[];
+  tradeOrderBids: any[];
 }
