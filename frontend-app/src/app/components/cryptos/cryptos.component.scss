@@ -1,0 +1,15 @@
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+li {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+li:last-child {
+  margin-bottom: 0;
+}

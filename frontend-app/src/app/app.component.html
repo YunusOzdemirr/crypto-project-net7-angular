@@ -1,7 +1,2 @@
-
-<div style="display: block" *ngIf='signalRService.data'>
-  <canvas baseChart
-          [datasets]="signalRService.data"
-          [labels]="chartLabels"
-          [legend]="chartLegend"></canvas>
-</div>
+<app-apirequest></app-apirequest>
+<router-outlet></router-outlet>

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { SignalrService } from './services/signalr.service';
 import { HttpClient } from '@angular/common/http';
 import { ChartConfiguration, ChartType } from 'chart.js';
+import { ApirequestComponent } from './components/apirequest/apirequest.component';
+import {SignalrService} from "./services/signalr.service";
 
 @Component({
   selector: 'app-root',
@@ -23,12 +24,14 @@ export class AppComponent {
   chartType: ChartType = 'bar';
   chartLegend: boolean = true;
 
-  constructor(public signalRService: SignalrService, private http: HttpClient) { }
+   constructor(public signalRService: SignalrService, private http: HttpClient) { }
+  //constructor( private http: HttpClient) { }
   title = 'frontend-app';
 
   ngOnInit() {
-    this.signalRService.startConnection();
-    this.signalRService.dataStream();
+   // this.apirequest.makeRequest();
+   // this.signalRService.startConnection();
+   // this.signalRService.dataStream();
   //  this.startHttpRequest();
   }
 
