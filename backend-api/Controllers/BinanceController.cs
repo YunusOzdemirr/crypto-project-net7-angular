@@ -12,7 +12,8 @@ public class BinanceController : Controller
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        var data = BinanceSocketService.TickerDictionary;
+        var data
+            = BinanceSocketService.TickerDictionary;
         return Ok(data);
     }
 }
