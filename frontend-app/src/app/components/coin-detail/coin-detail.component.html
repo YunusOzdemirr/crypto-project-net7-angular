@@ -1,0 +1,12 @@
+<div *ngIf="candleData">
+  <h1>{{ candleData.token.name }} ({{ candleData.token.symbol }})</h1>
+  <p>Last Price: {{ candleData.token.lastPrice | number }}</p>
+  <p>Price Change: {{ candleData.token.priceChange | number }}</p>
+  <p>Price Change Percent: {{ candleData.token.priceChangePercent | number }}%</p>
+  <p>High Price: {{ candleData.token.highPrice | number }}</p>
+  <p>Low Price: {{ candleData.token.lowPrice | number }}</p>
+  <p>Volume: {{ candleData.token.volume | number }}</p>
+  <p>Quote Volume: {{ candleData.token.quoteVolume | number }}</p>
+
+  <app-candle [chartData]="candleData.chart"></app-candle>
+</div>

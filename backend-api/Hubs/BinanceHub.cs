@@ -1,20 +1,9 @@
-using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Reactive.Subjects;
-using System.Runtime.CompilerServices;
-using System.Threading.Channels;
-using Binance.Net.Clients;
-using Binance.Net.Interfaces;
-using Binance.Net.Objects;
-using Binance.Net.Objects.Models.Spot;
-using crypto_api.Configurations;
+using crypto_api.Extensions;
 using crypto_api.Interfaces;
 using crypto_api.Models;
-using CryptoExchange.Net.CommonObjects;
-using CryptoExchange.Net.Sockets;
 using Microsoft.AspNetCore.SignalR;
-using crypto_api.Extensions;
-using crypto_api.Services;
+using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 
 
 namespace crypto_api.Hubs;
@@ -28,9 +17,17 @@ public class BinanceHub : Hub
         _binanceSocketService = binanceSocketService;
     }
 
-    public async Task<ChannelReader<TradeDataContainer>> StreamStocks()
+    public async Task<ChannelReader<TradeDataContainer>> StreamStocks(CancellationToken cancellationToken = default)
     {
-        return (await _binanceSocketService.GetStocks()).AsChannelReader(10);
+        return (await _binanceSocketService.GetStocks(cancellationToken)).AsChannelReader(10);
     }
-
+    public async IAsyncEnumerable<object> StreamStockHistory(string symbol, [EnumeratorCancellation]CancellationToken cancellationToken = default)
+    {
+        var result = _binanceSocketService.GetDetailAsync(symbol, cancellationToken);
+        await foreach (var item in result)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return item;
+        }
+    }
 }

@@ -6,7 +6,7 @@
     <!-- Position Column -->
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef> Name</th>
-      <td mat-cell *matCellDef="let element"[id]="element.baseAsset+'name'"> {{element.baseAsset}} </td>
+      <td mat-cell *matCellDef="let element"[id]="element.baseAsset+'name'"> <a [routerLink]="['/coin', element.symbol]">{{element.baseAsset}}</a> </td>
     </ng-container>
 
     <!-- Name Column -->

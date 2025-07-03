@@ -43,6 +43,26 @@ export class SignalrService {
 
     });
   }
+   public async StreamStockHistory(symbol: string): Promise<Observable<any>> {
+
+    const subject = new Subject<any>();
+    this.hubConnection.stream('StreamStockHistory', symbol).subscribe({
+      closed: false,
+      next(value: any) {
+        subject.next(value);
+      },
+      complete() {
+        console.log('StreamStockHistory completed');
+        subject.complete();
+      },
+      error(err: any) {
+        console.log('StreamStockHistory error: ' + err);
+        subject.error(err);
+      },
+    });
+
+    return subject.asObservable();
+  }
 
 public dataStream2(): Observable<any> {
   const subject = new Subject<any>();

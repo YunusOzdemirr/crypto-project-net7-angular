@@ -53,11 +53,11 @@ public class BinanceSocketService : IBinanceSocketService
             .SubscribeToAllTickerUpdatesAsync(ProcessTradeUsdUpdate).Result;
     }
 
-    public async Task<IObservable<TradeDataContainer>> GetStocks()
+    public async Task<IObservable<TradeDataContainer>> GetStocks(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         return await Task.FromResult(_subject);
     }
-
 
     public async IAsyncEnumerable<object> GetDetailAsync(string symbol,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -65,35 +65,26 @@ public class BinanceSocketService : IBinanceSocketService
         while (!cancellationToken.IsCancellationRequested)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            TickerDictionary.TryGetValue(symbol, out TradeDataContainer data);
-
-            TickerDictionaryHistory.TryGetValue(symbol, out var chart);
-            if (chart is null)
-                chart = new List<KlineDataContainer>
-                        { new KlineDataContainer { LastPrice = data.LastPrice, TimeStamp = DateTime.Now } };
-            yield return new { Token = data, Chart = chart };
-            await Task.Delay(delay);
-        }
-    }
-
-    public async IAsyncEnumerable<object> DataStream([EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            foreach (var coin in TickerDictionary)
+            if (TickerDictionary.TryGetValue(symbol, out TradeDataContainer data))
             {
-                TickerDictionaryHistory.TryGetValue(coin.Key, out var chart);
-                if (chart is null)
-                    chart = new List<KlineDataContainer>
-                        { new KlineDataContainer { LastPrice = coin.Value.LastPrice, TimeStamp = DateTime.Now } };
-                yield return new { Token = coin.Value, Chart = chart };
+                var klines = await _binanceService.GetRestClient().SpotApi.ExchangeData.GetKlinesAsync(symbol, Binance.Net.Enums.KlineInterval.OneMinute, limit: 100);
+                var chart = klines.Data.Select(k => new KlineDataContainer
+                {
+                    Open = k.OpenPrice,
+                    High = k.HighPrice,
+                    Low = k.LowPrice,
+                    Close = k.ClosePrice,
+                    TimeStamp = k.OpenTime
+                }).ToList();
+
+                yield return new { Token = data, Chart = chart };
             }
 
             await Task.Delay(delay, cancellationToken);
         }
     }
 
+    
 
     private async void ProcessTradeUsdUpdate(DataEvent<IEnumerable<IBinance24HPrice>> dataEvent)
     {
@@ -124,42 +115,9 @@ public class BinanceSocketService : IBinanceSocketService
 
             counter++;
 
-            if (TickerDictionaryHistory.TryGetValue(coin.Symbol, out var existingItem))
-            {
-                var lastItem = existingItem.Last();
-                if (lastItem is null)
-                {
-                    existingItem.RemoveAt(existingItem.Count - 1);
-                    lastItem = existingItem.Last();
-                }
-
-                if (existingItem.Count() >= 30 && (DateTime.Now.Second - lastItem.TimeStamp.Second >= 6 ||
-                                                   DateTime.Now.Minute - lastItem.TimeStamp.Minute >= 1))
-                    existingItem.RemoveAt(0);
-                if (lastItem.LastPrice != coin.LastPrice &&
-                    (DateTime.Now.Second - lastItem.TimeStamp.Second >= 6 ||
-                     DateTime.Now.Minute - lastItem.TimeStamp.Minute >= 1))
-                    existingItem.Add(new KlineDataContainer
-                    {
-                        LastPrice = coin.LastPrice,
-                        TimeStamp = DateTime.Now
-                    });
-            }
-            else
-                TickerDictionaryHistory.TryAdd(coin.Symbol, new List<KlineDataContainer>()
-                {
-                    new KlineDataContainer
-                    {
-                        LastPrice = coin.LastPrice,
-                        TimeStamp = DateTime.Now
-                    }
-                });
-
-            //var ticker = TickerDictionaryHistory[coin.Symbol];
-            //if (ticker.IsEmpty) return;
-            //var copy = new List<DateTime>(ticker.Keys);
-            //copy.Where(x => (dataEvent.Timestamp - x).TotalSeconds >= 60).ToList().ForEach(x => ticker.TryRemove(x, out _));
             await Task.Delay(750);
         }
     }
+
+
 }
